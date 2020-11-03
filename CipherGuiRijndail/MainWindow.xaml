@@ -1,0 +1,99 @@
+﻿<Window x:Class="CipherGuiRC4.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CipherGuiRC4"
+        mc:Ignorable="d"
+        Title="Rijndail" Height="575" Width="762" MinWidth= "0" >
+    <Grid Margin="0,2,0,-3.6">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="10*"/>
+            <ColumnDefinition Width="86*"/>
+            <ColumnDefinition Width="24*"/>
+            <ColumnDefinition Width="7*"/>
+            <ColumnDefinition Width="65*"/>
+            <ColumnDefinition Width="96*"/>
+            <ColumnDefinition Width="494*"/>
+            <ColumnDefinition Width="9*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="11*"/>
+            <RowDefinition Height="142*"/>
+            <RowDefinition Height="7*"/>
+            <RowDefinition Height="26*"/>
+            <RowDefinition Height="7*"/>
+            <RowDefinition Height="254*"/>
+            <RowDefinition Height="4*"/>
+            <RowDefinition Height="27*"/>
+            <RowDefinition Height="4*"/>
+            <RowDefinition Height="27*"/>
+            <RowDefinition Height="11*"/>
+        </Grid.RowDefinitions>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <GradientStop Color="#FF467CA8" Offset="0.273"/>
+                <GradientStop Color="White" Offset="1"/>
+                <GradientStop Color="#FF5897DD" Offset="0.994"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+        <Menu Grid.Column="5" HorizontalContentAlignment="Center">
+            <MenuItem x:Name="MenuItem_Exit" Header="Выход" Click="MenuItem_Exit_Click" HorizontalContentAlignment="Center"/>
+        </Menu>
+        <TextBox x:Name="MyConsole" TextWrapping="Wrap" IsReadOnly="True" Grid.Row="6" Grid.ColumnSpan="6" Grid.Column="1"/>
+        <Label Content="Консоль:" Grid.Row="4" Grid.ColumnSpan="6" Margin="0.4,0.2,0.2,6.4" Grid.RowSpan="2" VerticalContentAlignment="Center" Grid.Column="1"/>
+        <Label x:Name="Label_FilePath" Content="-" Grid.Row="8" Grid.Column="4" Grid.ColumnSpan="3" Margin="0.4,0.4,0.2,3.8" Grid.RowSpan="2"/>
+        <Label Content="Ключ:" Grid.Row="10" Grid.ColumnSpan="3" Margin="0.4,0.2,5.6,10.2" Grid.RowSpan="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Column="1" HorizontalAlignment="Left"/>
+        <PasswordBox x:Name="UserKey" Grid.Row="10" Grid.Column="4" Margin="0.4,0.2,0.2,10.2" Grid.RowSpan="2" Grid.ColumnSpan="3" VerticalContentAlignment="Center"/>
+        <GroupBox Header="Управление" Grid.ColumnSpan="6" Grid.Row="1" Margin="0.4,11,0.2,6.8" Grid.RowSpan="3" Grid.Column="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="110*"/>
+                    <ColumnDefinition Width="176*"/>
+                    <ColumnDefinition Width="6*"/>
+                    <ColumnDefinition Width="139*"/>
+                    <ColumnDefinition Width="6*"/>
+                    <ColumnDefinition Width="176*"/>
+                    <ColumnDefinition Width="110*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="5*"/>
+                    <RowDefinition Height="25*"/>
+                    <RowDefinition Height="7*"/>
+                    <RowDefinition Height="25*"/>
+                    <RowDefinition Height="7*"/>
+                    <RowDefinition Height="25*"/>
+                    <RowDefinition Height="5*"/>
+                </Grid.RowDefinitions>
+                <Label Content="Режим:" Grid.Row="1" Grid.Column="3" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                <Button x:Name="CipherFile" Content="Зашифровка" Click="CipherFile_Click" Grid.Row="3" Grid.Column="1"/>
+                <ComboBox x:Name="ComboBox_ModeDes" AutomationProperties.Name="ComboBox_ModeDes" SelectedIndex="0" Grid.Row="1" Grid.Column="5">
+                    <ComboBoxItem Content="ECB" HorizontalAlignment="Left" Width="118.4"/>
+                </ComboBox>
+                <Button x:Name="DecipherFile" Content="Расшифровка" Click="DecipherFile_Click" Grid.Row="5" Grid.Column="1"/>
+                <ComboBox x:Name="ComboBox_RijndailTextLength" AutomationProperties.Name="ComboBox_ModeDes" SelectedIndex="0" Grid.Row="3" Grid.Column="5">
+                    <ComboBoxItem Content="128" HorizontalAlignment="Left" Width="118.4"/>
+                    <ComboBoxItem Content="192" HorizontalAlignment="Left" Width="118.4"/>
+                    <ComboBoxItem Content="256" HorizontalAlignment="Left" Width="118.4"/>
+                </ComboBox>
+                <ComboBox x:Name="ComboBox_RijndailKeyLength" AutomationProperties.Name="ComboBox_ModeDes" SelectedIndex="0" Grid.Row="5" Grid.Column="5">
+                    <ComboBoxItem Content="128" HorizontalAlignment="Left" Width="118.4"/>
+                    <ComboBoxItem Content="192" HorizontalAlignment="Left" Width="118.4"/>
+                    <ComboBoxItem Content="256" HorizontalAlignment="Left" Width="118.4"/>
+                </ComboBox>
+                <Label Content="Размер блока текста:" Grid.Row="3" Grid.Column="3" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                <Label Content="Размер ключа:" Grid.Row="5" Grid.Column="3" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                <Button x:Name="Button_FindFile" Content="Выбрать файл" Click="Button_FindFile_Click" MinWidth="122" MinHeight="19.2" Grid.Row="1" Grid.Column="1"/>
+            </Grid>
+        </GroupBox>
+        <Menu Grid.ColumnSpan="2">
+            <MenuItem x:Name="MenuItem_File" Header="Файл" HorizontalContentAlignment="Center" Click="MenuItem_File_Click"/>
+        </Menu>
+        <Menu Grid.Column="2" Grid.ColumnSpan="3">
+            <MenuItem x:Name="MenuItem_Author" Header="Автор" Click="MenuItem_Author_Click"/>
+        </Menu>
+        <Label Content="Путь:" Grid.Row="8" Grid.ColumnSpan="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Column="1" Margin="0.4,0.4,0.2,3.8" Grid.RowSpan="2" HorizontalAlignment="Left"/>
+
+    </Grid>
+</Window>
