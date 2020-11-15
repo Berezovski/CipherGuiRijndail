@@ -58,7 +58,9 @@
     <Compile Include="AboutMe.xaml.cs">
       <DependentUpon>AboutMe.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GF.cs" />
     <Compile Include="Rijndail.cs" />
+    <Compile Include="WorkWithBits.cs" />
     <Page Include="AboutMe.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

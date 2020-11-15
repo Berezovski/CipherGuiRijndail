@@ -462,7 +462,7 @@ namespace RijndailAES
                     for (int p = 0; p < 4; p++)
                     {
                         matrixStateAfterMixColomns[j][i] = (byte)(matrixStateAfterMixColomns[j][i] ^
-                            (byte)Mod(Multy(matrixState[p][i], matrixMixColomns[j][p]), 0x11B));
+                            (byte)GF.Mod(GF.Multy(matrixState[p][i], matrixMixColomns[j][p]), 0x11B));
                     }
 
                 }
@@ -507,7 +507,7 @@ namespace RijndailAES
                     for (int p = 0; p < 4; p++)
                     {
                         matrixStateAfterMixColomns[j][i] = (byte)(matrixStateAfterMixColomns[j][i] ^
-                            (byte)Mod(Multy(matrixState[p][i], matrixInvMixColomns[j][p]), 0x11B));
+                            (byte)GF.Mod(GF.Multy(matrixState[p][i], matrixInvMixColomns[j][p]), 0x11B));
                     }
 
                 }
@@ -659,8 +659,8 @@ namespace RijndailAES
                 sElement = 0;
                 for (int j = 7; j >= 0; j--)
                 {
-                    tmp = bitXOR(aMatrix[j] & MultiplicativeReverse(i, 0x11B));
-                    tmp = tmp ^ PrintBit(0x63, j);
+                    tmp = bitXOR(aMatrix[j] & GF.MultiplicativeReverse(i, 0x11B));
+                    tmp = (uint) (tmp ^ WorkWithBits.PrintBit(0x63, j));
                     sElement <<= 1;
                     sElement = sElement | tmp;
                 }
@@ -699,162 +699,5 @@ namespace RijndailAES
             return number;
         }
 
-        private static uint Mod(uint number, uint mod)
-        {
-            int numberLength = FindBinaryLength(number);
-            int modLength = FindBinaryLength(mod);
-
-            if (modLength > numberLength) // если число в модуле больше, то уравнение и есть остаток
-            {
-                return number;
-            }
-
-            uint activeDegree;
-
-            // цикл самого деления
-            while (true)
-            {
-                activeDegree = (uint)1 << (numberLength - modLength);
-
-                number = number ^ Multy(activeDegree, mod);
-                numberLength = FindBinaryLength(number);
-
-                if (number == 0)
-                {
-                    return number;
-                }
-
-                if (modLength > numberLength) // есть остаток
-                {
-                    return number;
-                }
-
-            }
-
-        }
-
-        private static uint Dividing(uint number, uint divider)
-        {
-            int numberLength = FindBinaryLength(number);
-            int dividerLength = FindBinaryLength(divider);
-
-            if (dividerLength > numberLength) // если число в модуле больше, то уравнение и есть остаток
-            {
-                return number;
-            }
-
-            uint activeDegree;
-            uint answer = 0;
-
-            // цикл самого деления
-            while (true)
-            {
-                activeDegree = (uint)1 << (numberLength - dividerLength);
-
-                number = number ^ Multy(activeDegree, divider);
-                numberLength = FindBinaryLength(number);
-
-                answer = answer ^ activeDegree;
-
-                if (number == 0)
-                {
-                    return answer;
-                }
-
-                if (dividerLength > numberLength) // есть остаток
-                {
-                    return answer;
-                }
-
-            }
-
-        }
-
-        private static uint AdvancedGCD(uint firstCoefficient, uint secondCoefficient, out uint x, out uint y)
-        {
-            if (firstCoefficient == 0)
-            {
-                x = 0; y = 1;
-                return secondCoefficient;
-            }
-            uint x1, y1;
-            uint gcd = AdvancedGCD(Mod(secondCoefficient, firstCoefficient), firstCoefficient, out x1, out y1);
-            x = y1 ^ Multy(((Dividing(secondCoefficient, firstCoefficient))), x1);
-            y = x1;
-
-            return gcd;
-        }
-
-        private static uint MultiplicativeReverse(uint a, uint module)
-        {
-            a = Mod(a, module);
-            uint x, y;
-
-            AdvancedGCD(a, module, out x, out y);
-
-            return x;
-
-        }
-
-        private static uint Multy(uint firstNumber, uint secondNumber)
-        {
-
-            int numberBinaryLengthFirstElement = FindBinaryLength(firstNumber);
-            int numberBinaryLengthSecondElement = FindBinaryLength(secondNumber);
-
-            uint answer = 0;
-            uint tmpConjunction;
-            uint tmpXor;
-            for (int i = 0; i < numberBinaryLengthFirstElement; i++)
-            {
-                for (int j = 0; j < numberBinaryLengthSecondElement; j++)
-                {
-                    tmpConjunction = PrintBit(firstNumber, i) & PrintBit(secondNumber, j);
-                    tmpXor = PrintBit(answer, i + j) ^ tmpConjunction;
-                    answer = SetOrDestroyBit(answer, i + j, tmpXor);
-                }
-            }
-            return answer;
-        }
-
-        private static uint SetOrDestroyBit(uint number, int bitNymeration, uint printBit)
-        {
-            return number & ~((uint)1 << bitNymeration) | ((uint)printBit << bitNymeration);
-        }
-
-        // Вывести бит
-        private static uint PrintBit(uint number, int k)
-        {
-            return (number & ((uint)1 << k)) >> k;
-        }
-
-        private static int FindBinaryLength(uint number)
-        {
-            int count = 0;
-
-            while (!(number == 0))
-            {
-                number = number >> 1;
-                count++;
-            }
-            return count;
-        }
-
-        private static string PrintGfElement(uint number)
-        {
-            int numberBinaryLength = FindBinaryLength(number);
-            StringBuilder answer = new StringBuilder();
-
-            for (int i = numberBinaryLength; i >= 0; i--)
-            {
-                if (PrintBit(number, i) == 1)
-                {
-                    answer.Append("x^").Append(i).Append(" + ");
-                }
-            }
-            answer.Remove(answer.Length - 3, 3);
-
-            return answer.ToString();
-        }
     }
 }
