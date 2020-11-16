@@ -1,14 +1,11 @@
-﻿<Window x:Class="Laba_1.AboutMe"
+﻿<Window x:Name="ThisWindow" x:Class="Me.AboutMe"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Laba_1"
+        xmlns:local="clr-namespace:Me"
         mc:Ignorable="d"
         Title="Получается я" Height="450" Width="800" AutomationProperties.Name="TaskWindow">
-    <Window.Icon>
-        <BitmapImage UriSource="file:///D:/VisualStudio_Projects/CriptoGui/Laba_1/i.ico"/>
-    </Window.Icon>
     <Grid>
         <Grid>
             <Grid.Background>
@@ -17,11 +14,7 @@
                     <GradientStop Color="#FFE9FF3C" Offset="1"/>
                 </RadialGradientBrush>
             </Grid.Background>
-            <Image HorizontalAlignment="Center" Height="201" Margin="262,111,260.6,108" VerticalAlignment="Center" Width="271">
-                <Image.Source>
-                    <BitmapImage UriSource="file:///D:/VisualStudio_Projects/CriptoGui/AboutMe/Ya.jpg"/>
-                </Image.Source>
-            </Image>
+            <Image x:Name="MyImage" HorizontalAlignment="Center" Height="201" Margin="262,111,260.6,108" VerticalAlignment="Center" Width="271"/>
             <Label Content="Березовский А.Д." HorizontalAlignment="Center" Margin="262,88,260.6,309" VerticalAlignment="Center" Width="271" Height="23"/>
             <Label Content="М8О-411Б-17 / фАКУЛЬТЕТ №8/ МАИ" HorizontalAlignment="Center" Margin="262,317,260.6,80" VerticalAlignment="Center" Width="271" Height="23"/>
             <Button Content="Bruh" HorizontalAlignment="Center" Margin="316,345,321.6,43" VerticalAlignment="Center" Width="156" Height="32" AutomationProperties.Name="TaskWind" Click="Button_Click"/>

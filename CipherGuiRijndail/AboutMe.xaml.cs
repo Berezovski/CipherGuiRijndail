@@ -1,18 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
-namespace Laba_1
+namespace Me
 {
     /// <summary>
     /// Логика взаимодействия для AboutMe.xaml
@@ -21,7 +11,8 @@ namespace Laba_1
     {
         public AboutMe()
         {
-            InitializeComponent();
+            InitializeComponent();        
+            MyImage.Source = new BitmapImage(new Uri("/Resources/Ya.jpg", UriKind.Relative)) { CreateOptions = BitmapCreateOptions.IgnoreImageCache };
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

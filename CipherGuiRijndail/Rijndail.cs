@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RijndailAES
 {
@@ -659,7 +655,7 @@ namespace RijndailAES
                 sElement = 0;
                 for (int j = 7; j >= 0; j--)
                 {
-                    tmp = bitXOR(aMatrix[j] & GF.MultiplicativeReverse(i, 0x11B));
+                    tmp = (uint)WorkWithBits.XorBits(aMatrix[j] & GF.MultiplicativeReverse(i, 0x11B));
                     tmp = (uint) (tmp ^ WorkWithBits.PrintBit(0x63, j));
                     sElement <<= 1;
                     sElement = sElement | tmp;
@@ -682,21 +678,6 @@ namespace RijndailAES
                 _sMatrixReverse[_sMatrix[i]] = (byte)i;
             }
 
-        }
-
-        private static uint bitXOR(uint number)
-        {
-            int s = 32;
-
-            while (s != 1)
-            {
-                s = s >> 1;
-
-                // вырезаем левую и правую части
-                number = (number >> s) ^ (number & (((uint)1 << s) - 1));
-            }
-
-            return number;
         }
 
     }

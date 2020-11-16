@@ -1,7 +1,7 @@
-﻿<Application x:Class="CipherGuiRC4.App"
+﻿<Application x:Class="CipherGuiRijndail.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:CipherGuiRC4"
+             xmlns:local="clr-namespace:CipherGuiRijndail"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

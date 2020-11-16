@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace CipherGuiRC4.Properties
+namespace CipherGuiRijndail.Properties
 {
 
 
