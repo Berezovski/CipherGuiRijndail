@@ -52,7 +52,7 @@ namespace CipherGuiRijndail
         {
             if ((_userFile == null) || (_userFile.Length == 0))
             {
-                MyConsole.AppendText("Ошибка! Файл пуст или вы забыли его считать");
+                MyConsole.AppendText("Ошибка! Файл пуст или вы забыли его считать\n");
                 return;
             }
             if (UserKey.Password.Length == 0)
@@ -89,7 +89,7 @@ namespace CipherGuiRijndail
                 strWr.Flush();
             }
 
-            MyConsole.AppendText("Сохранил результат\n\n");
+            MyConsole.AppendText("Сохранил результат\n");
 
             _userFile = new byte[0];
             Label_FilePath.Content = "-";
@@ -99,7 +99,7 @@ namespace CipherGuiRijndail
         {
             if ((_userFile == null) || (_userFile.Length == 0))
             {
-                MyConsole.AppendText("Ошибка! Файл пуст или вы забыли его считать");
+                MyConsole.AppendText("Ошибка! Файл пуст или вы забыли его считать\n");
                 return;
             }
             if (UserKey.Password.Length == 0)
@@ -136,7 +136,7 @@ namespace CipherGuiRijndail
                 strWr.Write(_userFile, 0, _userFile.Length);
                 strWr.Flush();
             }
-            MyConsole.AppendText("Сохранил результат\n\n");
+            MyConsole.AppendText("Сохранил результат\n");
 
             _userFile = new byte[0];
             Label_FilePath.Content = "-";
