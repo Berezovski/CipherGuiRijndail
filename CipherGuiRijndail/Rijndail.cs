@@ -6,8 +6,6 @@ namespace RijndailAES
     {
         byte[] _sMatrix;
         byte[] _sMatrixReverse;
-        uint _mx = 0x11B;
-        uint _cx;
 
         int _Nr;
         int _Nb;
@@ -182,28 +180,8 @@ namespace RijndailAES
             // нужный нам текст
             byte[] answer = new byte[text.Length + missingSize + textByteLength];
 
-            for (int i = 0; i < text.Length; i++)
-            {
-                answer[i] = text[i];
-            }
-
-            // заполняем лабудой предпоследний блок до конца
-            for (int i = 0; i < missingSize; i++)
-            {
-                answer[text.Length + i] = (byte)i;
-            }
-
-            for (int i = 0; i < textByteLength; i++)
-            {
-                if (i == 0)
-                {
-                    answer[text.Length + missingSize + i] = (byte)missingSize;
-                    continue;
-                }
-
-                answer[text.Length + missingSize + i] = (byte)i;
-            }
-
+            Array.Copy(text, answer, text.Length);
+            answer[text.Length + missingSize] = (byte)missingSize;
 
             return answer;
 
@@ -219,10 +197,8 @@ namespace RijndailAES
 
             byte[] answer = new byte[(textArray.Length - 1) * textLength - misingSize];
 
-            for (int i = 0; i < answer.Length; i++)
-            {
-                answer[i] = bytes[i];
-            }
+            Array.Copy(bytes, answer, answer.Length);
+
 
             return answer;
 
@@ -604,47 +580,9 @@ namespace RijndailAES
             return GetByteArrayFromStateMatrix(rows);
         }
 
-        private byte CuttingByte(uint number, int byteNymeration)
-        {
-            return (byte)((number >> (byteNymeration * 8)) & (((uint)1 << 8) - 1));
-        }
-
-        private uint CycleRightShift(uint number, int activeBits, int shiftBits)
-        {
-            if (activeBits <= shiftBits)
-            {
-                shiftBits = shiftBits % activeBits;
-            }
-            return ((number << (32 - shiftBits)) >> (32 - activeBits)) | (number >> shiftBits);
-        }
-
-        private uint CycleLeftShift(uint number, int activeBits, int shiftBits)
-        {
-            if (activeBits <= shiftBits)
-            {
-                shiftBits = shiftBits % activeBits;
-            }
-            return ((number << (32 - activeBits + shiftBits)) >> (32 - activeBits)) | (number >> (activeBits - shiftBits));
-        }
-
-        // строки будут наоборот, т.к. в битах начинаем с нулевого справа
-        private uint[] MatrixWithOffsetsSubBytes(uint firstRow)
-        {
-            uint tmp = firstRow;
-            uint[] aMatrix = new uint[8];
-
-            for (int i = 0; i < aMatrix.Length; i++)
-            {
-                aMatrix[i] = CycleLeftShift(tmp, 8, i);
-                Console.WriteLine(Convert.ToString(aMatrix[i], 2));
-            }
-
-            return aMatrix;
-        }
-
         private void SmatrixGeneration()
         {
-            uint[] aMatrix = MatrixWithOffsetsSubBytes(0b11110001);
+            uint[] aMatrix = GenerateMatrixWithOffsetsSubBytes(0b11110001);
             _sMatrix = new byte[256];
             uint tmp = 0;
 
@@ -656,7 +594,7 @@ namespace RijndailAES
                 for (int j = 7; j >= 0; j--)
                 {
                     tmp = (uint)WorkWithBits.XorBits(aMatrix[j] & GF.MultiplicativeReverse(i, 0x11B));
-                    tmp = (uint) (tmp ^ WorkWithBits.PrintBit(0x63, j));
+                    tmp = (uint)(tmp ^ WorkWithBits.PrintBit(0x63, j));
                     sElement <<= 1;
                     sElement = sElement | tmp;
                 }
@@ -678,6 +616,21 @@ namespace RijndailAES
                 _sMatrixReverse[_sMatrix[i]] = (byte)i;
             }
 
+        }
+
+        // строки будут наоборот, т.к. в битах начинаем с нулевого справа
+        private uint[] GenerateMatrixWithOffsetsSubBytes(uint firstRow)
+        {
+            uint tmp = firstRow;
+            uint[] aMatrix = new uint[8];
+
+            for (int i = 0; i < aMatrix.Length; i++)
+            {
+                aMatrix[i] = (uint)WorkWithBits.CycleLeft((ulong)tmp, 8, i);
+                Console.WriteLine(Convert.ToString(aMatrix[i], 2));
+            }
+
+            return aMatrix;
         }
 
     }

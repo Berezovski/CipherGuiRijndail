@@ -49,13 +49,12 @@ namespace CipherGuiRijndail
         }
 
         private void CipherFile_Click(object sender, RoutedEventArgs e)
-        {           
-            if (_userFile.Length == 0)
+        {
+            if ((_userFile == null) || (_userFile.Length == 0))
             {
-                MyConsole.AppendText("Ошибка! Файл пуст или вы забыли его считать\n");
+                MyConsole.AppendText("Ошибка! Файл пуст или вы забыли его считать");
                 return;
             }
-
             if (UserKey.Password.Length == 0)
             {
                 MyConsole.AppendText("Ошибка! Не ввели пароль\n");
@@ -98,9 +97,14 @@ namespace CipherGuiRijndail
 
         private void DecipherFile_Click(object sender, RoutedEventArgs e)
         {
-            if (_userFile.Length == 0)
+            if ((_userFile == null) || (_userFile.Length == 0))
             {
-                MyConsole.AppendText("Ошибка! Файл пуст или вы забыли его считать\n");
+                MyConsole.AppendText("Ошибка! Файл пуст или вы забыли его считать");
+                return;
+            }
+            if (UserKey.Password.Length == 0)
+            {
+                MyConsole.AppendText("Ошибка! Не ввели пароль\n");
                 return;
             }
 
