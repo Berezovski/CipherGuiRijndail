@@ -4,9 +4,6 @@ namespace RijndailAES
 {
     class Rijndail
     {
-        byte[] _sMatrix;
-        byte[] _sMatrixReverse;
-
         int _Nr;
         int _Nb;
         int _Nk;
@@ -54,7 +51,7 @@ namespace RijndailAES
         0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
         };
 
-        byte[][] MixColumnsConst = new byte[4][]
+        byte[][] _MixColumnsConst = new byte[4][]
         {
               new byte[4]{ 0x02, 0x03, 0x01, 0x01},
               new byte[4]{ 0x01, 0x02, 0x03, 0x01},
@@ -62,7 +59,7 @@ namespace RijndailAES
               new byte[4]{ 0x03, 0x01, 0x01, 0x02 }
         };
 
-        byte[][] InvMixColumnsConst = new byte[4][]
+        byte[][] _InvMixColumnsConst = new byte[4][]
         {
               new byte[4] { 0x0e, 0x0b, 0x0d, 0x09 },
               new byte[4]{ 0x09, 0x0e, 0x0b, 0x0d},
@@ -70,7 +67,7 @@ namespace RijndailAES
               new byte[4]{ 0x0b, 0x0d, 0x09, 0x0e }
 };
 
-        byte[][] RCon = new byte[15][]
+        byte[][] _RCon = new byte[15][]
         {
               new byte[4] { 0, 0, 0, 0 },
               new byte[4] { 0x01, 0, 0, 0 },
@@ -93,9 +90,6 @@ namespace RijndailAES
 
         public Rijndail(int bitsCountRijndailBlock, int bitCountRijndailKey)
         {
-            SmatrixGeneration();
-            SmatrixReverseGeneration();
-
             int tmpKeyForTable = 0;
             int tmpStateForTable = 0;
 
@@ -170,7 +164,7 @@ namespace RijndailAES
             return GetRealBytesWithoutInfoBlock(GetByteArrayFromTextArray(textArrayFixedLength));
         }
 
-        private byte[] GetAllBytesAndAppendInfoBlock(byte[] text)
+        public byte[] GetAllBytesAndAppendInfoBlock(byte[] text)
         {
             int textByteLength = _Nb * 4;
 
@@ -187,7 +181,7 @@ namespace RijndailAES
 
         }
 
-        private byte[] GetRealBytesWithoutInfoBlock(byte[] bytes)
+        public byte[] GetRealBytesWithoutInfoBlock(byte[] bytes)
         {
             int textLength = _Nb * 4;
 
@@ -199,58 +193,77 @@ namespace RijndailAES
 
             Array.Copy(bytes, answer, answer.Length);
 
-
             return answer;
 
         }
 
-        private byte[] Chipher(byte[] text, byte[][] roundKeys)
+        public byte[] Chipher(byte[] text, byte[][] roundKeys)
         {
-            byte[] answer = text;
-
             int textByteLength = _Nb * 4;
 
+            byte[][] stateMatrix = GetStateMatrix(text, _Nb);
+
             // далее уже алгоритм шифрования
-            answer = XorWord(answer, roundKeys[0], textByteLength);
+            stateMatrix = AddRoundKey(stateMatrix, roundKeys[0]);
 
             for (int i = 1; i < _Nr; i++)
             {
-                answer = SubBytes(answer);
-                answer = ShiftRows(answer);
-                answer = MixColumns(answer);
-                answer = XorWord(answer, roundKeys[i], textByteLength);
+                stateMatrix = SubBytes(stateMatrix);
+                stateMatrix = ShiftRows(stateMatrix);
+                stateMatrix = MixColumns(stateMatrix);
+                stateMatrix = AddRoundKey(stateMatrix, roundKeys[i]);
             }
-            answer = SubBytes(answer);
-            answer = ShiftRows(answer);
-            answer = XorWord(answer, roundKeys[_Nr], textByteLength);
+            stateMatrix = SubBytes(stateMatrix);
+            stateMatrix = ShiftRows(stateMatrix);
+            stateMatrix = AddRoundKey(stateMatrix, roundKeys[_Nr]);
 
-            return answer;
+            return GetByteArrayFromStateMatrix(stateMatrix);
         }
 
-        private byte[] Dechipher(byte[] text, byte[][] roundKeys)
+        public byte[] Dechipher(byte[] text, byte[][] roundKeys)
         {
-            byte[] answer = text;
-
             int textByteLength = _Nb * 4;
 
+            byte[][] stateMatrix = GetStateMatrix(text, _Nb);
+
             // далее уже алгоритм дешифрования
-            answer = XorWord(answer, roundKeys[_Nr], textByteLength);
-            answer = InvShiftRows(answer);
-            answer = InvSubBytes(answer);
+            stateMatrix = AddRoundKey(stateMatrix, roundKeys[_Nr]);
+            stateMatrix = InvShiftRows(stateMatrix);
+            stateMatrix = InvSubBytes(stateMatrix);
 
             for (int i = _Nr - 1; i >= 1; i--)
             {
-                answer = XorWord(answer, roundKeys[i], textByteLength);
-                answer = InvMixColumns(answer);
-                answer = InvShiftRows(answer);
-                answer = InvSubBytes(answer);
+                stateMatrix = AddRoundKey(stateMatrix, roundKeys[i]);
+                stateMatrix = InvMixColumns(stateMatrix);
+                stateMatrix = InvShiftRows(stateMatrix);
+                stateMatrix = InvSubBytes(stateMatrix);
             }
-            answer = XorWord(answer, roundKeys[0], textByteLength);
+            stateMatrix = AddRoundKey(stateMatrix, roundKeys[0]);
+
+            return GetByteArrayFromStateMatrix(stateMatrix);
+        }
+
+        public byte[][] AddRoundKey(byte[][] stateMatrix, byte[] roundKey)
+        {
+            byte[][] answer = new byte[stateMatrix.Length][];
+
+            for (int i = 0; i < stateMatrix.Length; i++)
+            {
+                answer[i] = new byte[stateMatrix[0].Length];
+            }
+
+            for (int i = 0; i < answer[0].Length; i++)
+            {
+                for (int j = 0; j < answer.Length; j++)
+                {
+                    answer[j][i] = (byte)(stateMatrix[j][i] ^ roundKey[i * answer.Length + j]);
+                }
+            }
 
             return answer;
         }
 
-        private byte[][] KeyExpansion(byte[] userKey)
+        public byte[][] KeyExpansion(byte[] userKey)
         {
             int keyByteLength = _Nk * 4;
             byte[] key = new byte[keyByteLength];
@@ -282,7 +295,7 @@ namespace RijndailAES
                 }
                 else
                 {
-                    words[i] = XorWord(XorWord(SubWord(RotWord(words[i - 1])), RCon[i / _Nb], 4), words[i - _Nk], 4);
+                    words[i] = XorWord(XorWord(SubWord(RotWord(words[i - 1])), _RCon[i / _Nb], 4), words[i - _Nk], 4);
                 }
             }
 
@@ -290,25 +303,23 @@ namespace RijndailAES
 
         }
 
-        private byte[] GetByteArrayFromTextArray(byte[][] roundKeys)
+        public byte[] GetByteArrayFromTextArray(byte[][] roundKeys)
         {
             byte[] allBytes = new byte[roundKeys.Length * roundKeys[0].Length];
 
             for (int i = 0; i < roundKeys.Length; i++)
             {
-                for (int j = 0; j < roundKeys[0].Length; j++)
-                {
-                    allBytes[i * roundKeys[0].Length + j] = roundKeys[i][j];
-                }
+                Array.Copy(roundKeys[i], 0, allBytes, i * roundKeys[0].Length, roundKeys[0].Length);
             }
 
             return allBytes;
         }
 
-        private byte[][] GetTextArray(byte[] allBytes, int textLength)
+        public byte[][] GetTextArray(byte[] allBytes, int textLength)
         {
             byte[][] textArray;
 
+            // случай когда количество элементов allBytes не кратно нужной длине
             if (allBytes.Length % textLength != 0)
             {
                 int lastBlockLength = allBytes.Length % textLength;
@@ -317,25 +328,12 @@ namespace RijndailAES
                 for (int i = 0; i < textArray.Length - 1; i++)
                 {
                     textArray[i] = new byte[textLength];
-
-                    for (int j = 0; j < textLength; j++)
-                    {
-                        textArray[i][j] = allBytes[i * textLength + j];
-
-                    }
+                    Array.Copy(allBytes, i * textLength, textArray[i], 0, textLength);
                 }
 
-                for (int j = 0; j < lastBlockLength; j++)
-                {
-                    textArray[textArray.Length - 1] = new byte[textLength];
-                    textArray[textArray.Length - 1][j] = allBytes[(textArray.Length - 1) * lastBlockLength + j];
-                }
+                textArray[textArray.Length - 1] = new byte[textLength];
+                Array.Copy(allBytes, (textArray.Length - 1) * textLength, textArray[textArray.Length - 1], 0, lastBlockLength);
 
-                for (int j = lastBlockLength; j < textLength; j++)
-                {
-                    textArray[textArray.Length - 1][j] = 0;
-
-                }
             }
             else
             {
@@ -345,18 +343,14 @@ namespace RijndailAES
                 {
                     textArray[i] = new byte[textLength];
 
-                    for (int j = 0; j < textLength; j++)
-                    {
-                        textArray[i][j] = allBytes[i * textLength + j];
-
-                    }
+                    Array.Copy(allBytes, i * textLength, textArray[i], 0, textLength);
                 }
             }
 
             return textArray;
         }
 
-        private byte[] XorWord(byte[] word1, byte[] word2, int wordLength)
+        public byte[] XorWord(byte[] word1, byte[] word2, int wordLength)
         {
             byte[] answer = new byte[wordLength];
 
@@ -368,7 +362,7 @@ namespace RijndailAES
             return answer;
         }
 
-        private byte[] RotWord(byte[] bt)
+        public byte[] RotWord(byte[] bt)
         {
             byte[] answer = new byte[bt.Length];
 
@@ -381,7 +375,7 @@ namespace RijndailAES
             return answer;
         }
 
-        private byte[] SubWord(byte[] bt)
+        public byte[] SubWord(byte[] bt)
         {
             byte[] answer = new byte[bt.Length];
 
@@ -393,7 +387,7 @@ namespace RijndailAES
             return answer;
         }
 
-        private byte[][] GetStateMatrix(byte[] stateBytes, int colomnCount)
+        public byte[][] GetStateMatrix(byte[] stateBytes, int colomnCount)
         {
             byte[][] matrixState = new byte[4][];
 
@@ -413,12 +407,8 @@ namespace RijndailAES
             return matrixState;
         }
 
-        private byte[] MixColumns(byte[] stateBytes)
+        public byte[][] MixColumns(byte[][] stateMatrix)
         {
-            byte[][] matrixState = GetStateMatrix(stateBytes, _Nb);
-
-            byte[][] matrixMixColomns = MixColumnsConst;
-
             byte[][] matrixStateAfterMixColomns = new byte[4][];
 
             for (int j = 0; j < 4; j++)
@@ -434,16 +424,16 @@ namespace RijndailAES
                     for (int p = 0; p < 4; p++)
                     {
                         matrixStateAfterMixColomns[j][i] = (byte)(matrixStateAfterMixColomns[j][i] ^
-                            (byte)GF.Mod(GF.Multy(matrixState[p][i], matrixMixColomns[j][p]), 0x11B));
+                            (byte)GF.Mod(GF.Multy(stateMatrix[p][i], _MixColumnsConst[j][p]), 0x11B));
                     }
 
                 }
             }
 
-            return GetByteArrayFromStateMatrix(matrixStateAfterMixColomns);
+            return matrixStateAfterMixColomns;
         }
 
-        private byte[] GetByteArrayFromStateMatrix(byte[][] stateMatrix)
+        public byte[] GetByteArrayFromStateMatrix(byte[][] stateMatrix)
         {
             byte[] answer = new byte[stateMatrix[0].Length * 4];
 
@@ -458,179 +448,124 @@ namespace RijndailAES
             return answer;
         }
 
-        private byte[] InvMixColumns(byte[] stateBytes)
+        public byte[][] InvMixColumns(byte[][] stateMatrix)
         {
-            byte[][] matrixState = GetStateMatrix(stateBytes, _Nb);
-
-            byte[][] matrixInvMixColomns = InvMixColumnsConst;
-
-            byte[][] matrixStateAfterMixColomns = new byte[4][];
+            byte[][] matrixStateAfterInvMixColomns = new byte[4][];
 
             for (int j = 0; j < 4; j++)
             {
-                matrixStateAfterMixColomns[j] = new byte[_Nb];
+                matrixStateAfterInvMixColomns[j] = new byte[_Nb];
+            }
+
+            for (int j = 0; j < 4; j++)
+            {
+                matrixStateAfterInvMixColomns[j] = new byte[_Nb];
             }
 
             for (int i = 0; i < _Nb; i++)
             {
                 for (int j = 0; j < 4; j++)
                 {
-                    matrixStateAfterMixColomns[j][i] = 0;
+                    matrixStateAfterInvMixColomns[j][i] = 0;
                     for (int p = 0; p < 4; p++)
                     {
-                        matrixStateAfterMixColomns[j][i] = (byte)(matrixStateAfterMixColomns[j][i] ^
-                            (byte)GF.Mod(GF.Multy(matrixState[p][i], matrixInvMixColomns[j][p]), 0x11B));
+                        matrixStateAfterInvMixColomns[j][i] = (byte)(matrixStateAfterInvMixColomns[j][i] ^
+                            (byte)GF.Mod(GF.Multy(stateMatrix[p][i], _InvMixColumnsConst[j][p]), 0x11B));
                     }
 
                 }
             }
 
-            return GetByteArrayFromStateMatrix(matrixStateAfterMixColomns);
+            return matrixStateAfterInvMixColomns;
         }
 
-        private byte[] SubBytes(byte[] bt)
+        public byte[][] SubBytes(byte[][] stateMatrix)
         {
-            byte[] copyBytes = new byte[bt.Length];
+            byte[][] answer = new byte[stateMatrix.Length][];
 
-            for (int i = 0; i < bt.Length; i++)
+            for (int i = 0; i < stateMatrix.Length; i++)
             {
-                copyBytes[i] = _sBox[bt[i]];
+                answer[i] = new byte[stateMatrix[0].Length];
             }
 
-            return copyBytes;
-        }
-
-        private byte[] InvSubBytes(byte[] bt)
-        {
-            byte[] copyBytes = new byte[bt.Length];
-
-            for (int i = 0; i < bt.Length; i++)
+            for (int i = 0; i < stateMatrix.Length; i++)
             {
-                copyBytes[i] = _sBoxReverse[bt[i]];
+                for (int j = 0; j < stateMatrix[0].Length; j++)
+                {
+                    answer[i][j] = _sBox[stateMatrix[i][j]];
+                }
             }
 
-            return copyBytes;
+            return answer;
         }
 
-        private byte[] ShiftRows(byte[] bt)
+        public byte[][] InvSubBytes(byte[][] stateMatrix)
         {
-            byte[] copyBytes = (byte[])bt.Clone();
-            byte[][] rows = GetStateMatrix(copyBytes, _Nb);
+            byte[][] answer = new byte[stateMatrix.Length][];
+
+            for (int i = 0; i < stateMatrix.Length; i++)
+            {
+                answer[i] = new byte[stateMatrix[0].Length];
+            }
+
+            for (int i = 0; i < stateMatrix.Length; i++)
+            {
+                for (int j = 0; j < stateMatrix[0].Length; j++)
+                {
+                    answer[i][j] = _sBoxReverse[stateMatrix[i][j]];
+                }
+            }
+
+            return answer;
+        }
+
+        public byte[][] ShiftRows(byte[][] stateMatrix)
+        {
+            byte[][] copyStateMatrix = new byte[stateMatrix.Length][];
+
+            for (int i = 0; i < stateMatrix.Length; i++)
+            {
+                copyStateMatrix[i] = (byte[])stateMatrix[i].Clone();
+            }
             byte tmp;
 
-            if (_Nb != 8)
+            for (int i = 0; i < copyStateMatrix.Length; i++)
             {
-                for (int i = 0; i < rows.Length; i++)
+                tmp = copyStateMatrix[i][0];
+                for (int j = 0; j < copyStateMatrix[0].Length - 1; j++)
                 {
-                    tmp = rows[i][0];
-                    for (int j = 0; j < rows[0].Length - 1; j++)
-                    {
-                        rows[i][j] = rows[i][j + 1];
-                    }
-                    rows[i][rows[0].Length - 1] = tmp;
+                    copyStateMatrix[i][j] = copyStateMatrix[i][j + 1];
                 }
-            }
-            else
-            { // тут не так!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                for (int i = 0; i < rows.Length; i++)
-                {
-                    tmp = rows[i][0];
-                    for (int j = 0; j < rows[0].Length - 1; j++)
-                    {
-                        rows[i][j] = rows[i][j + 1];
-                    }
-                    rows[i][rows[0].Length - 1] = tmp;
-                }
+                copyStateMatrix[i][copyStateMatrix[0].Length - 1] = tmp;
             }
 
-            return GetByteArrayFromStateMatrix(rows);
+
+            return copyStateMatrix;
         }
 
-        private byte[] InvShiftRows(byte[] bt)
+        public byte[][] InvShiftRows(byte[][] stateMatrix)
         {
-            byte[] copyBytes = (byte[])bt.Clone();
-            byte[][] rows = GetStateMatrix(copyBytes, _Nb);
+            byte[][] copyStateMatrix = new byte[stateMatrix.Length][];
+
+            for (int i = 0; i < stateMatrix.Length; i++)
+            {
+                copyStateMatrix[i] = (byte[])stateMatrix[i].Clone();
+            }
             byte tmp;
 
-            if (_Nb != 8)
+            for (int i = 0; i < copyStateMatrix.Length; i++)
             {
-                for (int i = 0; i < rows.Length; i++)
+                tmp = copyStateMatrix[i][copyStateMatrix[0].Length - 1];
+                for (int j = copyStateMatrix[0].Length - 1; j > 0; j--)
                 {
-                    tmp = rows[i][rows[0].Length - 1];
-                    for (int j = rows[0].Length - 1; j > 0; j--)
-                    {
-                        rows[i][j] = rows[i][j - 1];
-                    }
-                    rows[i][0] = tmp;
+                    copyStateMatrix[i][j] = copyStateMatrix[i][j - 1];
                 }
-            }
-            else
-            {
-                for (int i = 0; i < rows.Length; i++)
-                {
-                    tmp = rows[i][rows[0].Length - 1];
-                    for (int j = rows[0].Length - 1; j > 0; j--)
-                    {
-                        rows[i][j] = rows[i][j - 1];
-                    }
-                    rows[i][0] = tmp;
-                }
-            }
-
-            return GetByteArrayFromStateMatrix(rows);
-        }
-
-        private void SmatrixGeneration()
-        {
-            uint[] aMatrix = GenerateMatrixWithOffsetsSubBytes(0b11110001);
-            _sMatrix = new byte[256];
-            uint tmp = 0;
-
-            uint sElement;
-
-            for (uint i = 0; i < 256; i++)
-            {
-                sElement = 0;
-                for (int j = 7; j >= 0; j--)
-                {
-                    tmp = (uint)WorkWithBits.XorBits(aMatrix[j] & GF.MultiplicativeReverse(i, 0x11B));
-                    tmp = (uint)(tmp ^ WorkWithBits.PrintBit(0x63, j));
-                    sElement <<= 1;
-                    sElement = sElement | tmp;
-                }
-
-
-                _sMatrix[i] = (byte)sElement;
-
+                copyStateMatrix[i][0] = tmp;
             }
 
 
-        }
 
-        private void SmatrixReverseGeneration()
-        {
-            _sMatrixReverse = new byte[256];
-
-            for (uint i = 0; i < 256; i++)
-            {
-                _sMatrixReverse[_sMatrix[i]] = (byte)i;
-            }
-
-        }
-
-        // строки будут наоборот, т.к. в битах начинаем с нулевого справа
-        private uint[] GenerateMatrixWithOffsetsSubBytes(uint firstRow)
-        {
-            uint tmp = firstRow;
-            uint[] aMatrix = new uint[8];
-
-            for (int i = 0; i < aMatrix.Length; i++)
-            {
-                aMatrix[i] = (uint)WorkWithBits.CycleLeft((ulong)tmp, 8, i);
-                Console.WriteLine(Convert.ToString(aMatrix[i], 2));
-            }
-
-            return aMatrix;
+            return copyStateMatrix;
         }
 
     }
