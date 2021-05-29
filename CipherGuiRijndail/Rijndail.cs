@@ -183,7 +183,7 @@ namespace RijndailAES
             stopWatch.Start();
             for (int i = 0; i < textArrayFixedLength.Length; i++)
             {
-                textArrayFixedLength[i] = Chipher(textArrayFixedLength[i], roundKeys);
+                textArrayFixedLength[i] = Cipher(textArrayFixedLength[i], roundKeys);
             }
             stopWatch.Stop();
             time = stopWatch.Elapsed;
@@ -195,11 +195,11 @@ namespace RijndailAES
         /// <summary>
         /// Расшифровывает данные и показывает количество времени, затраченное на расшифрование
         /// </summary>
-        /// <param name="chipherText"> Текст для расшифрования </param>
+        /// <param name="cipherText"> Текст для расшифрования </param>
         /// <param name="userKey"> Ключ пользователя (от 2 байт) </param>
         /// <param name="time"> Время расшифрования </param>
         /// <returns> Расшифрованные биты </returns>
-        public byte[] ECB_Decrypt(byte[] chipherText, byte[] userKey, out TimeSpan time)
+        public byte[] ECB_Decrypt(byte[] cipherText, byte[] userKey, out TimeSpan time)
         {
             if (userKey.Length < 2)
             {
@@ -209,11 +209,11 @@ namespace RijndailAES
             time = new TimeSpan();
 
             int textLength = _Nb * 4;
-            byte[][] textArrayFixedLength = GetTextArray(chipherText, textLength);
+            byte[][] textArrayFixedLength = GetTextArray(cipherText, textLength);
 
             if (textArrayFixedLength.Length < 2)
             {
-                return chipherText;
+                return cipherText;
             }
 
             byte[][] tmpKeys = KeyExpansion(userKey);
@@ -222,7 +222,7 @@ namespace RijndailAES
             stopWatch.Start();
             for (int i = 0; i < textArrayFixedLength.Length; i++)
             {
-                textArrayFixedLength[i] = Dechipher(textArrayFixedLength[i], roundKeys);
+                textArrayFixedLength[i] = Decipher(textArrayFixedLength[i], roundKeys);
             }
             stopWatch.Stop();
             time = stopWatch.Elapsed;
@@ -280,7 +280,7 @@ namespace RijndailAES
         /// <param name="text"> Блок текста </param>
         /// <param name="roundKeys"> Набор раундовыз ключей </param>
         /// <returns> Зашифрованный блок </returns>
-        private byte[] Chipher(byte[] text, byte[][] roundKeys)
+        private byte[] Cipher(byte[] text, byte[][] roundKeys)
         {
             int textByteLength = _Nb * 4;
 
@@ -309,7 +309,7 @@ namespace RijndailAES
         /// <param name="text"> Блок текста </param>
         /// <param name="roundKeys"> Набор раундовыз ключей </param>
         /// <returns> Расшифрованный блок </returns>
-        private byte[] Dechipher(byte[] text, byte[][] roundKeys)
+        private byte[] Decipher(byte[] text, byte[][] roundKeys)
         {
             int textByteLength = _Nb * 4;
 
